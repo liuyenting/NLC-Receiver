@@ -4,9 +4,11 @@
 #include <dc1394/dc1394.h>
 #include <vector>
 #include <cstdarg>
+#include <opencv2/core/mat.hpp>
 
 namespace Device
 {
+const uint32_t cameraDmaCounts = 4;
 class Camera;
 }
 
@@ -21,27 +23,27 @@ public:
 	void close();
 
 	enum Parameters {
-		BusSpeed, Resolution, FrameRate, Exposure
+        BusSpeed = 0, Resolution, FrameRate, Exposure
 	};
-
-	void setParameter(Camera::Parameters parameter, ...);
+    void setParameter(int count, ...);
 
 	void startAcquisition();
-	void grabFrame();
+	cv::Mat grabFrame();
 	void stopAcquisition();
 
 private:
 	void startTransmission();
 	void stopTransmission();
 
+	cv::Mat dc1394frameToMat(dc1394video_frame_t *frame);
+
 	void freeObject();
 	void freeCamera();
 
 	dc1394_t *objHandle;
 	dc1394camera_t *camHandle;
+	dc1394video_frame_t *frameHandle;
 	dc1394error_t err;
-
-	const uint_t dmaCounts = 4;
 };
 
 #endif

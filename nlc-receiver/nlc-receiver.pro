@@ -5,27 +5,29 @@
 #-------------------------------------------------
 
 QT       += core gui
+QT_CONFIG       -= no-pkg-config
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = nlc-receiver
-TEMPLATE = app
+TARGET      = nlc-receiver
+TEMPLATE    = app
 
 
-SOURCES += main.cpp\
-        mainwindow.cpp \
-    camera.cpp \
-    utility.cpp
+SOURCES     +=  main.cpp \
+                mainwindow.cpp \
+                camera.cpp \
+                utility.cpp
 
-HEADERS  += \
-    camera.hpp \
-    mainwindow.hpp \
-    utility.hpp
+HEADERS     +=  camera.hpp \
+                mainwindow.hpp \
+                utility.hpp
 
-FORMS += \
-    mainwindow.ui
+FORMS       +=  mainwindow.ui
 
-macx: LIBS += -L$$PWD/../../../../../opt/local/lib/ -ldc1394.22
+macx: LIBS  +=  -L $$PWD/../../../../../opt/local/lib \
+                -ldc1394.22 \
+                -lopencv_core \
+                -lopencv_imgproc
 
 INCLUDEPATH += $$PWD/../../../../../opt/local/include
-DEPENDPATH += $$PWD/../../../../../opt/local/include
+DEPENDPATH  += $$PWD/../../../../../opt/local/include
