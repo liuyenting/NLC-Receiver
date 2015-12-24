@@ -27,5 +27,6 @@ void MainWindow::on_actionSave_Image_triggered() {
 }
 
 void MainWindow::on_actionExit_triggered() {
-
+    // TODO: Make sure the camera is stopped.
+    ui->exit();
 }
