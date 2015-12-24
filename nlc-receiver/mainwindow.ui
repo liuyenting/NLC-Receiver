@@ -14,7 +14,7 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="QOpenGLWidget" name="imagePreview">
+   <widget class="OpenCVViewer" name="imagePreview">
     <property name="geometry">
      <rect>
       <x>0</x>
@@ -39,7 +39,6 @@
      <string>Device</string>
     </property>
     <addaction name="separator"/>
-    <addaction name="actionRefresh"/>
    </widget>
    <widget class="QMenu" name="menuCamera">
     <property name="title">
@@ -88,6 +87,13 @@
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>OpenCVViewer</class>
+   <extends>QOpenGLWidget</extends>
+   <header>opencvviewer.hpp</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

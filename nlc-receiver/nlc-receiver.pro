@@ -16,11 +16,13 @@ TEMPLATE    = app
 SOURCES     +=  main.cpp \
                 mainwindow.cpp \
                 camera.cpp \
-                utility.cpp
+                utility.cpp \
+    opencvviewer.cpp
 
 HEADERS     +=  camera.hpp \
                 mainwindow.hpp \
-                utility.hpp
+                utility.hpp \
+    opencvviewer.hpp
 
 FORMS       +=  mainwindow.ui
 
