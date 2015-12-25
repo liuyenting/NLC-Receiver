@@ -3,6 +3,8 @@
 #include "camera.hpp"
 #include <dc1394/types.h>
 #include <QtDebug>
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow), camera(new Camera) {
@@ -18,13 +20,15 @@ MainWindow::~MainWindow() {
 
 void MainWindow::on_actionStart_triggered() {
     // TEMPORARY
-    camera->stopAcquisition();
-    camera->setParameter(Camera::BusSpeed, DC1394_ISO_SPEED_3200);
-    camera->setParameter(Camera::Resolution, 0, 0, 1280, 962);
-    camera->setParameter(Camera::FrameRate, DC1394_FRAMERATE_30);
+    //camera->stopAcquisition();
+    //camera->setParameter(Camera::BusSpeed, DC1394_ISO_SPEED_3200);
+    //camera->setParameter(Camera::Resolution, 0, 0, 1280, 962);
+    //camera->setParameter(Camera::FrameRate, DC1394_FRAMERATE_30);
 
-    camera->startAcquisition();
-    cv::Mat newFrame = camera->grabFrame();
+    fprintf(stderr, "finished configuring the camera\n");
+
+    //camera->startAcquisition();
+    cv::Mat newFrame = cv::imread("/Users/Andy/Downloads/lena.png", CV_LOAD_IMAGE_COLOR);
     ui->imagePreview->showImage(newFrame);
 }
 
@@ -75,6 +79,8 @@ void MainWindow::on_deviceSelected(const QString & guid_label) {
     qDebug() << "trying to connect with" << qPrintable(guid_label) << '\n';
 
     camera->open(guid_label.toULongLong());
+
+    fprintf(stderr, "connected\n");
 
     ui->actionStart->activate(QAction::Trigger);
 }

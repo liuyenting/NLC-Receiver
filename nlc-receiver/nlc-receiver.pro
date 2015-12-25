@@ -29,7 +29,9 @@ FORMS       +=  mainwindow.ui
 macx: LIBS  +=  -L $$PWD/../../../../../opt/local/lib \
                 -ldc1394.22 \
                 -lopencv_core \
-                -lopencv_imgproc
+                -lopencv_imgproc \
+                -lopencv_highgui \
+                -lopencv_imgcodecs
 
 INCLUDEPATH += $$PWD/../../../../../opt/local/include
 DEPENDPATH  += $$PWD/../../../../../opt/local/include
