@@ -32,11 +32,11 @@ void OpenCVViewer::resizeGL(int width, int height)
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
 
-    glOrtho(0, width, 0, height, 0, 1);	// To Draw image in the center of the area
+    // Draw image in the center of the area.
+    glOrtho(0, width, 0, height, 0, 1);
 
     glMatrixMode(GL_MODELVIEW);
 
-    // ---> Scaled Image Sizes
     outH = width/imgRatio;
     outW = width;
 
@@ -46,8 +46,7 @@ void OpenCVViewer::resizeGL(int width, int height)
         outH = height;
     }
 
-    emit imageSizeChanged( outW, outH );
-    // <--- Scaled Image Sizes
+    emit imageSizeChanged(outW, outH);
 
     posX = (width-outW)/2;
     posY = (height-outH)/2;
@@ -96,10 +95,7 @@ void OpenCVViewer::renderImage()
             outH = this->size().height() * scaleRatio;
 
             // Resize the image to the viewer.
-            if((inW != outW) && (inH != outH))
-            {
-                fprintf(stderr, "need to resize\n");
-
+            if((inW != outW) && (inH != outH)) {
                 image = renderedImg.scaled(outW, outH,
                                            Qt::KeepAspectRatio,
                                            Qt::SmoothTransformation);
@@ -112,13 +108,8 @@ void OpenCVViewer::renderImage()
             outH = image.height();
 
             // Centering the image.
-
             posX = (this->size().width() - outW/scaleRatio)/2;
             posY = (this->size().height() - outH/scaleRatio)/2;
-            fprintf(stderr, "in %dx%d\n", inW, inH);
-            fprintf(stderr, "out %dx%d\n", outW, outH);
-            fprintf(stderr, "frame %dx%d\n", this->size().width(), this->size().height());
-            fprintf(stderr, "left top (%d, %d)\n", posX, posY);
             glRasterPos2i(posX, posY);
 
             glDrawPixels(outW, outH, GL_RGBA, GL_UNSIGNED_BYTE, image.bits());

@@ -96,6 +96,9 @@
    </property>
   </action>
   <action name="actionSave_Image">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Save Image</string>
    </property>

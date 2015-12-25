@@ -34,7 +34,7 @@ void MainWindow::on_actionStart_triggered() {
 
     fprintf(stderr, "finished configuring the camera\n");
 
-    //camera->startAcquisition();
+    camera->startAcquisition();
 
     ui->actionStop->setEnabled(true);
 }
@@ -42,7 +42,7 @@ void MainWindow::on_actionStart_triggered() {
 void MainWindow::on_actionStop_triggered() {
     ui->actionStop->setEnabled(false);
 
-    // TODO: Stop the camera here.
+    camera->stopAcquisition();
 
     ui->actionStart->setEnabled(true);
     ui->actionGrab->setEnabled(true);
@@ -66,6 +66,7 @@ void MainWindow::on_actionRefresh_triggered() {
     fprintf(stderr, "refresh triggered, %lu device detected\n", deviceList.size());
 
     // Dynamically populate the device GUIDs into the menu.
+    if(deviceList.size() > 0) {
     QString newDeviceGuid;
     QSignalMapper *signalMapper = new QSignalMapper(this);
     for(size_t i = 0; i < deviceList.size(); i++) {
@@ -84,7 +85,11 @@ void MainWindow::on_actionRefresh_triggered() {
     }
     // Connect the mapper.
     connect(signalMapper, SIGNAL(mapped(const QString &)), this, SLOT(on_deviceSelected(const QString &)));
-
+    } else {
+        QAction *noValidDevice = new QAction("No device", this);
+        noValidDevice->setEnabled(false);
+        ui->menuDeviceList->addAction(noValidDevice);
+    }
     addRefreshAction();
 }
 
