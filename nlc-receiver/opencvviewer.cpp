@@ -128,15 +128,15 @@ bool OpenCVViewer::showImage(cv::Mat image)
 
     imgRatio = (float)image.cols/(float)image.rows;
 
-    if( originalImg.channels() == 3)
+    if(originalImg.channels() == 3) {
         renderedImg = QImage((const unsigned char*)(originalImg.data),
                               originalImg.cols, originalImg.rows,
                               originalImg.step, QImage::Format_RGB888)/*.rgbSwapped()*/;
-    else if( originalImg.channels() == 1)
+    } else if(originalImg.channels() == 1) {
         renderedImg = QImage((const unsigned char*)(originalImg.data),
                               originalImg.cols, originalImg.rows,
                               originalImg.step, QImage::Format_Indexed8);
-    else
+    } else
         return false;
 
     isSceneChanged = true;

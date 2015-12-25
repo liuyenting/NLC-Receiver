@@ -11,6 +11,10 @@ MainWindow::MainWindow(QWidget *parent)
 	ui->setupUi(this);
 
     fprintf(stderr, "inside main window constructor\n");
+
+    // ENABLE GRAB FRAME FOR DEBUG
+    ui->actionGrab->setEnabled(true);
+
     ui->actionRefresh->activate(QAction::Trigger);
 }
 
@@ -19,6 +23,9 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::on_actionStart_triggered() {
+    ui->actionStart->setEnabled(false);
+    ui->actionGrab->setEnabled(false);
+
     // TEMPORARY
     //camera->stopAcquisition();
     //camera->setParameter(Camera::BusSpeed, DC1394_ISO_SPEED_3200);
@@ -28,12 +35,27 @@ void MainWindow::on_actionStart_triggered() {
     fprintf(stderr, "finished configuring the camera\n");
 
     //camera->startAcquisition();
-    cv::Mat newFrame = cv::imread("/Users/Andy/Downloads/lena.png", CV_LOAD_IMAGE_COLOR);
-    ui->imagePreview->showImage(newFrame);
+
+    ui->actionStop->setEnabled(true);
 }
 
 void MainWindow::on_actionStop_triggered() {
+    ui->actionStop->setEnabled(false);
 
+    // TODO: Stop the camera here.
+
+    ui->actionStart->setEnabled(true);
+    ui->actionGrab->setEnabled(true);
+}
+
+void MainWindow::on_actionGrab_triggered()
+{
+    ui->actionStart->setEnabled(false);
+
+    cv::Mat newFrame = cv::imread("/Users/Andy/Downloads/lena.png", CV_LOAD_IMAGE_COLOR);
+    ui->imagePreview->showImage(newFrame);
+
+    ui->actionStart->setEnabled(true);
 }
 
 void MainWindow::on_actionRefresh_triggered() {
@@ -82,7 +104,13 @@ void MainWindow::on_deviceSelected(const QString & guid_label) {
 
     fprintf(stderr, "connected\n");
 
-    ui->actionStart->activate(QAction::Trigger);
+    // Enable the UI.
+    ui->actionGrab->setEnabled(true);
+    ui->actionStart->setEnabled(true);
+
+    // Automatically start grabbing.
+    //ui->actionStart->activate(QAction::Trigger);
+    ui->actionGrab->activate(QAction::Trigger);
 }
 
 void MainWindow::addRefreshAction() {
