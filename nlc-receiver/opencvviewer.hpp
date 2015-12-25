@@ -8,6 +8,7 @@
 class OpenCVViewer : public QOpenGLWidget, protected QOpenGLFunctions_2_0
 {
     Q_OBJECT
+
 public:
     explicit OpenCVViewer(QWidget *parent = 0);
 
@@ -19,19 +20,19 @@ public slots:
 
 protected:
     void initializeGL(); /// OpenGL initialization
-    void 	paintGL(); /// OpenGL Rendering
-    void 	resizeGL(int width, int height);        /// Widget Resize Event
+    void paintGL(); /// OpenGL Rendering
+    void resizeGL(int width, int height);        /// Widget Resize Event
 
-    void        updateScene();
-    void        renderImage();
+    void updateScene();
+    void renderImage();
 
 private:
-    bool        mSceneChanged;          /// Indicates when OpenGL view is to be redrawn
+    bool mSceneChanged;          /// Indicates when OpenGL view is to be redrawn
 
-    QImage      mRenderQtImg;           /// Qt image to be rendered
-    cv::Mat     mOrigImage;             /// original OpenCV image to be shown
+    QImage mRenderQtImg;           /// Qt image to be rendered
+    cv::Mat mOrigImage;             /// original OpenCV image to be shown
 
-    QColor      mBgColor;		/// Background color
+    QColor mBgColor;		/// Background color
 
     int         mOutH;                  /// Resized Image height
     int         mOutW;                  /// Resized Image width

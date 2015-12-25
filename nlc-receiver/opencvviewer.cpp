@@ -64,7 +64,6 @@ void OpenCVViewer::resizeGL(int width, int height)
 void OpenCVViewer::updateScene()
 {
     if( mSceneChanged && this->isVisible() )
-        //updateGL(); obsolete
         update();
 }
 
@@ -99,16 +98,18 @@ void OpenCVViewer::renderImage()
             int imW = mRenderQtImg.width();
             int imH = mRenderQtImg.height();
 
+            fprintf(stderr, "image WxH = %dx%d\n", imW, imH);
+            fprintf(stderr, "window size WxH = %dx%d\n", this->size().width(), this->size().height());
+
             // The image is to be resized to fit the widget?
             if( imW != this->size().width() &&
                     imH != this->size().height() )
             {
+                fprintf(stderr, "need to resize\n");
 
-                image = mRenderQtImg.scaled( //this->size(),
-                                             QSize(mOutW,mOutH),
-                                             Qt::IgnoreAspectRatio,
-                                             Qt::SmoothTransformation
-                                             );
+                image = mRenderQtImg.scaled(this->size().width(), this->size().height(),
+                                            Qt::KeepAspectRatio,
+                                            Qt::SmoothTransformation);
 
                 //qDebug( QString( "Image size: (%1x%2)").arg(imW).arg(imH).toAscii() );
             }
@@ -116,12 +117,15 @@ void OpenCVViewer::renderImage()
                 image = mRenderQtImg;
 
             // ---> Centering image in draw area
-
+            mPosX = (this->size().width() - image.width()) / 2;
+            mPosY = (this->size().height() - image.height()) / 2;
             glRasterPos2i( mPosX, mPosY );
             // <--- Centering image in draw area
 
             imW = image.width();
             imH = image.height();
+
+            fprintf(stderr, "final image size WxH = %dx%d\n", imW, imH);
 
             glDrawPixels( imW, imH, GL_RGBA, GL_UNSIGNED_BYTE, image.bits());
         }
