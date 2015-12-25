@@ -93,12 +93,15 @@ void OpenCVViewer::renderImage()
 
         QImage image; // the image rendered
 
+        // TODO: CLEANUP THE CODES HERE
         glPushMatrix();
         {
             int imW = mRenderQtImg.width();
             int imH = mRenderQtImg.height();
 
             fprintf(stderr, "image WxH = %dx%d\n", imW, imH);
+
+            this->show();
             fprintf(stderr, "window size WxH = %dx%d\n", this->size().width(), this->size().height());
 
             // The image is to be resized to fit the widget?
@@ -107,7 +110,7 @@ void OpenCVViewer::renderImage()
             {
                 fprintf(stderr, "need to resize\n");
 
-                image = mRenderQtImg.scaled(this->size().width(), this->size().height(),
+                image = mRenderQtImg.scaled(this->size().width()*2, this->size().height()*2,
                                             Qt::KeepAspectRatio,
                                             Qt::SmoothTransformation);
 
@@ -117,8 +120,6 @@ void OpenCVViewer::renderImage()
                 image = mRenderQtImg;
 
             // ---> Centering image in draw area
-            mPosX = (this->size().width() - image.width()) / 2;
-            mPosY = (this->size().height() - image.height()) / 2;
             glRasterPos2i( mPosX, mPosY );
             // <--- Centering image in draw area
 
