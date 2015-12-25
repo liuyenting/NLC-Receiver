@@ -92,29 +92,36 @@ void OpenCVViewer::renderImage()
         {
             int inW = renderedImg.width();
             int inH = renderedImg.height();
+            outW = this->size().width() * scaleRatio;
+            outH = this->size().height() * scaleRatio;
 
             // Resize the image to the viewer.
-            if((inW != this->size().width()) && (inH != this->size().height()))
+            if((inW != outW) && (inH != outH))
             {
                 fprintf(stderr, "need to resize\n");
 
-                image = renderedImg.scaled(this->size() * scaleRatio,
+                image = renderedImg.scaled(outW, outH,
                                            Qt::KeepAspectRatio,
                                            Qt::SmoothTransformation);
             }
             else
                 image = renderedImg;
 
+            // Update to the rescaled image size.
+            outW = image.width();
+            outH = image.height();
+
             // Centering the image.
-            posX = (this->size().width() - inW/scaleRatio)/2;
-            posY = (this->size().height() - inH/scaleRatio)/2;
+
+            posX = (this->size().width() - outW/scaleRatio)/2;
+            posY = (this->size().height() - outH/scaleRatio)/2;
+            fprintf(stderr, "in %dx%d\n", inW, inH);
+            fprintf(stderr, "out %dx%d\n", outW, outH);
+            fprintf(stderr, "frame %dx%d\n", this->size().width(), this->size().height());
+            fprintf(stderr, "left top (%d, %d)\n", posX, posY);
             glRasterPos2i(posX, posY);
 
-            // Update to the rescaled size.
-            inW = image.width();
-            inH = image.height();
-
-            glDrawPixels(inW, inH, GL_RGBA, GL_UNSIGNED_BYTE, image.bits());
+            glDrawPixels(outW, outH, GL_RGBA, GL_UNSIGNED_BYTE, image.bits());
         }
         glPopMatrix();
 
@@ -124,7 +131,8 @@ void OpenCVViewer::renderImage()
 
 bool OpenCVViewer::showImage(cv::Mat image)
 {
-    image.copyTo(originalImg);
+    cv::flip(image, originalImg, 0);
+    //image.copyTo(originalImg);
 
     imgRatio = (float)image.cols/(float)image.rows;
 
