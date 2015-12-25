@@ -13,33 +13,37 @@ public:
     explicit OpenCVViewer(QWidget *parent = 0);
 
 signals:
-    void imageSizeChanged( int outW, int outH ); /// Used to resize the image outside the widget
+    void imageSizeChanged(int outW, int outH);
 
 public slots:
-    bool showImage(cv::Mat image); /// Used to set the image to be viewed
+    bool showImage(cv::Mat image);
 
 protected:
-    void initializeGL(); /// OpenGL initialization
-    void paintGL(); /// OpenGL Rendering
-    void resizeGL(int width, int height);        /// Widget Resize Event
+    void initializeGL();
+    void paintGL();
+    void resizeGL(int width, int height);
 
     void updateScene();
     void renderImage();
 
 private:
-    bool mSceneChanged;          /// Indicates when OpenGL view is to be redrawn
+    // Indicates whether OpenGL view has to re-render.
+    bool isSceneChanged;
 
-    QImage mRenderQtImg;           /// Qt image to be rendered
-    cv::Mat mOrigImage;             /// original OpenCV image to be shown
+    QImage renderedImg;
+    cv::Mat originalImg;
 
-    QColor mBgColor;		/// Background color
+    // Default background color.
+    QColor bgColor;
 
-    int         mOutH;                  /// Resized Image height
-    int         mOutW;                  /// Resized Image width
-    float       mImgRatio;             /// height/width ratio
+    // Image width, height and aspect ratio(H/W).
+    int outW, outH;
+    float imgRatio;
 
-    int         mPosX;                  /// Top left X position to render image in the center of widget
-    int         mPosY;                  /// Top left Y position to render image in the center of widget
+    // Top left position of the rendered image.
+    int posX, posY;
+
+    int scaleRatio;
 };
 
 #endif

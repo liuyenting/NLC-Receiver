@@ -1,18 +1,16 @@
 #include "opencvviewer.hpp"
 #include <QOpenGLFunctions>
 
-OpenCVViewer::OpenCVViewer(QWidget *parent) :
-    QOpenGLWidget(parent)
+OpenCVViewer::OpenCVViewer(QWidget *parent)
+    : QOpenGLWidget(parent), scaleRatio(2)
 {
-    mSceneChanged = false;
-    mBgColor = QColor::fromRgb(150, 150, 150);
+    isSceneChanged = false;
+    bgColor = QColor::fromRgb(150, 150, 150);
 
-    mOutH = 0;
-    mOutW = 0;
-    mImgRatio = 4.0f/3.0f;
+    outH = outW = 0;
+    imgRatio = 4.0f/3.0f;
 
-    mPosX = 0;
-    mPosY = 0;
+    posX = posY = 0;
 }
 
 void OpenCVViewer::initializeGL()
@@ -20,12 +18,10 @@ void OpenCVViewer::initializeGL()
     makeCurrent();
     initializeOpenGLFunctions();
 
-    float r = ((float)mBgColor.darker().red())/255.0f;
-    float g = ((float)mBgColor.darker().green())/255.0f;
-    float b = ((float)mBgColor.darker().blue())/255.0f;
-    glClearColor(r,g,b,1.0f);
-
-    // qglClearColor(mBgColor.darker()); obsolete
+    float r = ((float)bgColor.darker().red())/255.0f;
+    float g = ((float)bgColor.darker().green())/255.0f;
+    float b = ((float)bgColor.darker().blue())/255.0f;
+    glClearColor(r, g, b, 1.0f);
 }
 
 void OpenCVViewer::resizeGL(int width, int height)
@@ -41,29 +37,29 @@ void OpenCVViewer::resizeGL(int width, int height)
     glMatrixMode(GL_MODELVIEW);
 
     // ---> Scaled Image Sizes
-    mOutH = width/mImgRatio;
-    mOutW = width;
+    outH = width/imgRatio;
+    outW = width;
 
-    if(mOutH>height)
+    if(outH>height)
     {
-        mOutW = height*mImgRatio;
-        mOutH = height;
+        outW = height*imgRatio;
+        outH = height;
     }
 
-    emit imageSizeChanged( mOutW, mOutH );
+    emit imageSizeChanged( outW, outH );
     // <--- Scaled Image Sizes
 
-    mPosX = (width-mOutW)/2;
-    mPosY = (height-mOutH)/2;
+    posX = (width-outW)/2;
+    posY = (height-outH)/2;
 
-    mSceneChanged = true;
+    isSceneChanged = true;
 
     updateScene();
 }
 
 void OpenCVViewer::updateScene()
 {
-    if( mSceneChanged && this->isVisible() )
+    if(isSceneChanged && this->isVisible())
         update();
 }
 
@@ -71,14 +67,13 @@ void OpenCVViewer::paintGL()
 {
     makeCurrent();
 
-    if( !mSceneChanged )
+    if(!isSceneChanged)
         return;
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
     renderImage();
 
-    mSceneChanged = false;
+    isSceneChanged = false;
 }
 
 void OpenCVViewer::renderImage()
@@ -87,77 +82,64 @@ void OpenCVViewer::renderImage()
 
     glClear(GL_COLOR_BUFFER_BIT);
 
-    if (!mRenderQtImg.isNull())
-    {
+    if (!renderedImg.isNull()) {
         glLoadIdentity();
 
-        QImage image; // the image rendered
+        QImage image;
 
         // TODO: CLEANUP THE CODES HERE
         glPushMatrix();
         {
-            int imW = mRenderQtImg.width();
-            int imH = mRenderQtImg.height();
+            int inW = renderedImg.width();
+            int inH = renderedImg.height();
 
-            fprintf(stderr, "image WxH = %dx%d\n", imW, imH);
-
-            this->show();
-            fprintf(stderr, "window size WxH = %dx%d\n", this->size().width(), this->size().height());
-
-            // The image is to be resized to fit the widget?
-            if( imW != this->size().width() &&
-                    imH != this->size().height() )
+            // Resize the image to the viewer.
+            if((inW != this->size().width()) && (inH != this->size().height()))
             {
                 fprintf(stderr, "need to resize\n");
 
-                image = mRenderQtImg.scaled(this->size().width()*2, this->size().height()*2,
-                                            Qt::KeepAspectRatio,
-                                            Qt::SmoothTransformation);
-
-                //qDebug( QString( "Image size: (%1x%2)").arg(imW).arg(imH).toAscii() );
+                image = renderedImg.scaled(this->size() * scaleRatio,
+                                           Qt::KeepAspectRatio,
+                                           Qt::SmoothTransformation);
             }
             else
-                image = mRenderQtImg;
+                image = renderedImg;
 
-            // ---> Centering image in draw area
-            glRasterPos2i( mPosX, mPosY );
-            // <--- Centering image in draw area
+            // Centering the image.
+            posX = (this->size().width() - inW/scaleRatio)/2;
+            posY = (this->size().height() - inH/scaleRatio)/2;
+            glRasterPos2i(posX, posY);
 
-            imW = image.width();
-            imH = image.height();
+            // Update to the rescaled size.
+            inW = image.width();
+            inH = image.height();
 
-            fprintf(stderr, "final image size WxH = %dx%d\n", imW, imH);
-
-            glDrawPixels( imW, imH, GL_RGBA, GL_UNSIGNED_BYTE, image.bits());
+            glDrawPixels(inW, inH, GL_RGBA, GL_UNSIGNED_BYTE, image.bits());
         }
         glPopMatrix();
 
-        // end
         glFlush();
     }
 }
 
 bool OpenCVViewer::showImage(cv::Mat image)
 {
-    image.copyTo(mOrigImage);
+    image.copyTo(originalImg);
 
-    mImgRatio = (float)image.cols/(float)image.rows;
+    imgRatio = (float)image.cols/(float)image.rows;
 
-    if( mOrigImage.channels() == 3)
-        mRenderQtImg = QImage((const unsigned char*)(mOrigImage.data),
-                              mOrigImage.cols, mOrigImage.rows,
-                              mOrigImage.step, QImage::Format_RGB888)/*.rgbSwapped()*/;
-    else if( mOrigImage.channels() == 1)
-        mRenderQtImg = QImage((const unsigned char*)(mOrigImage.data),
-                              mOrigImage.cols, mOrigImage.rows,
-                              mOrigImage.step, QImage::Format_Indexed8);
+    if( originalImg.channels() == 3)
+        renderedImg = QImage((const unsigned char*)(originalImg.data),
+                              originalImg.cols, originalImg.rows,
+                              originalImg.step, QImage::Format_RGB888)/*.rgbSwapped()*/;
+    else if( originalImg.channels() == 1)
+        renderedImg = QImage((const unsigned char*)(originalImg.data),
+                              originalImg.cols, originalImg.rows,
+                              originalImg.step, QImage::Format_Indexed8);
     else
         return false;
 
-    //mRenderQtImg = QGLWidget::convertToGLFormat(mRenderQtImg); obsolete
-
-    mSceneChanged = true;
-
+    isSceneChanged = true;
     updateScene();
 
     return true;
