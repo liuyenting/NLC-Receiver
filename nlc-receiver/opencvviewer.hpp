@@ -17,6 +17,7 @@ signals:
 
 public slots:
     bool showImage(const cv::Mat3b &srcImg);
+    cv::Mat3b dumpImage();
 
 protected:
     void initializeGL();

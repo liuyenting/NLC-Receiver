@@ -119,19 +119,17 @@ void MainWindow::on_actionExit_triggered() {
 }
 
 void MainWindow::on_deviceSelected(const QString & guid_label) {
-    qDebug() << "trying to connect with" << qPrintable(guid_label) << '\n';
+    qDebug() << "Trying to connect with" << qPrintable(guid_label);
 
     camera->open(guid_label.toULongLong());
-
-    fprintf(stderr, "connected\n");
+    qDebug() << "... CONNECTED\n";
 
     // Enable the UI.
     ui->actionGrab->setEnabled(true);
     ui->actionStart->setEnabled(true);
 
     // Automatically start grabbing.
-    //ui->actionStart->activate(QAction::Trigger);
-    //ui->actionGrab->activate(QAction::Trigger);
+    ui->actionStart->activate(QAction::Trigger);
 }
 
 void MainWindow::addRefreshAction() {

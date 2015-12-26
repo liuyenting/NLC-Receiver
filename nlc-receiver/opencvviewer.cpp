@@ -124,6 +124,7 @@ void OpenCVViewer::renderImage()
 
 bool OpenCVViewer::showImage(const cv::Mat3b &srcImg)
 {
+    cv::Mat3b tmp;
     // Source image is always flipped.
     cv::flip(srcImg, originalImg, 0);
 
@@ -144,4 +145,8 @@ bool OpenCVViewer::showImage(const cv::Mat3b &srcImg)
     updateScene();
 
     return true;
+}
+
+cv::Mat3b OpenCVViewer::dumpImage() {
+    return originalImg;
 }
