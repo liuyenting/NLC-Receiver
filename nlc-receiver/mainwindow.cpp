@@ -36,15 +36,15 @@ void MainWindow::on_actionStart_triggered() {
     fprintf(stderr, "finished configuring the camera\n");
 
     camera->startAcquisition();
+    camera->startCaptureVideo(ui->imagePreview);
 
     ui->actionStop->setEnabled(true);
-
-    // TODO: trigger another thread for image acquisition
 }
 
 void MainWindow::on_actionStop_triggered() {
     ui->actionStop->setEnabled(false);
 
+    camera->stopCaptureVideo();
     camera->stopAcquisition();
 
     ui->actionStart->setEnabled(true);

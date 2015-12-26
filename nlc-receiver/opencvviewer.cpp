@@ -132,11 +132,12 @@ bool OpenCVViewer::showImage(const cv::Mat3b &srcImg)
     // Copy the array into QImage displayable format.
     renderedImg = QImage(originalImg.cols, originalImg.rows, QImage::Format_ARGB32);
     for (int y = 0; y < originalImg.rows; ++y) {
-            const cv::Vec3b *srcrow = originalImg[y];
-            QRgb *destrow = (QRgb*)renderedImg.scanLine(y);
-            for (int x = 0; x < originalImg.cols; ++x) {
-                    destrow[x] = qRgba(srcrow[x][2], srcrow[x][1], srcrow[x][0], 255);
-            }
+        const cv::Vec3b *srcrow = originalImg[y];
+        QRgb *destrow = (QRgb*)renderedImg.scanLine(y);
+        for (int x = 0; x < originalImg.cols; ++x) {
+            // Original image is sent in as BGR, manually reverse back to RGB.
+            destrow[x] = qRgba(srcrow[x][0], srcrow[x][1], srcrow[x][2], 255);
+        }
     }
 
     isSceneChanged = true;

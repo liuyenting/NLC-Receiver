@@ -9,6 +9,8 @@
 #include <opencv2/core/mat.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <thread>
+#include <chrono>
 
 Camera::Camera()
     : isDeviceOpened(false), isTransmitting(false) {
@@ -135,6 +137,15 @@ void Camera::startAcquisition() {
     fprintf(stderr, "acquisition started\n");
 }
 
+void Camera::startCaptureVideo(OpenCVViewer *viewer) {
+    // Assign the viewing port.
+    frameViewer = viewer;
+
+    // Initiate the capture thread.
+    isCapturingVideo = true;
+    videoThread = std::thread(&Camera::grabVideo, this);
+}
+
 cv::Mat Camera::grabFrame() {
     err = dc1394_capture_dequeue(camHandle, DC1394_CAPTURE_POLICY_WAIT, &frameHandle);
 	if(err != DC1394_SUCCESS) {
@@ -153,6 +164,18 @@ cv::Mat Camera::grabFrame() {
     }
 
 	return newFrame;
+}
+
+void Camera::grabVideo() {
+    while(isCapturingVideo) {
+        frameViewer->showImage(grabFrame());
+        std::this_thread::sleep_for(std::chrono::milliseconds(33));
+    }
+}
+
+void Camera::stopCaptureVideo() {
+    isCapturingVideo = false;
+    videoThread.join();
 }
 
 void Camera::stopAcquisition() {

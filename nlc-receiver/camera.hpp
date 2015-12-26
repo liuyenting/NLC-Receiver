@@ -6,6 +6,9 @@
 #include <cstdarg>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/highgui/highgui_c.h>
+#include <atomic>
+#include <thread>
+#include "opencvviewer.hpp"
 
 namespace Device
 {
@@ -29,7 +32,10 @@ public:
     void setParameter(int count, ...);
 
 	void startAcquisition();
-	cv::Mat grabFrame();
+    void startCaptureVideo(OpenCVViewer *viewer);
+    cv::Mat grabFrame();
+    void grabVideo();
+    void stopCaptureVideo();
 	void stopAcquisition();
 
 private:
@@ -48,6 +54,11 @@ private:
 	dc1394error_t err;
 
     bool isDeviceOpened, isTransmitting;
+
+    std::atomic_bool isCapturingVideo;
+    std::thread videoThread;
+
+    OpenCVViewer *frameViewer;
 };
 
 #endif
