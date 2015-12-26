@@ -169,6 +169,7 @@ cv::Mat Camera::grabFrame() {
 void Camera::grabVideo() {
     while(isCapturingVideo) {
         frameViewer->showImage(grabFrame());
+        // TODO: Limit the refresh rate by probing the camera configuration first.
         std::this_thread::sleep_for(std::chrono::milliseconds(33));
     }
 }

@@ -41,8 +41,7 @@ void OpenCVViewer::resizeGL(int width, int height)
     outH = width/imgRatio;
     outW = width;
 
-    if(outH>height)
-    {
+    if(outH > height) {
         outW = height*imgRatio;
         outH = height;
     }
