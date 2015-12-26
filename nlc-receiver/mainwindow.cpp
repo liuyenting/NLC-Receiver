@@ -39,8 +39,7 @@ void MainWindow::on_actionStart_triggered() {
 
     ui->actionStop->setEnabled(true);
 
-    cv::Mat newFrame = camera->grabFrame();
-    ui->imagePreview->showImage(newFrame);
+    // TODO: trigger another thread for image acquisition
 }
 
 void MainWindow::on_actionStop_triggered() {
@@ -56,8 +55,21 @@ void MainWindow::on_actionGrab_triggered()
 {
     ui->actionStart->setEnabled(false);
 
-    cv::Mat newFrame = cv::imread("/Users/Andy/Downloads/lena.png", CV_LOAD_IMAGE_COLOR);
+    // TEMPORARY
+    //camera->stopAcquisition();
+    camera->setParameter(1, Camera::BusSpeed, DC1394_ISO_SPEED_3200);
+    camera->setParameter(1, Camera::Resolution, 0, 0, 1280, 962);
+    camera->setParameter(1, Camera::FrameRate, DC1394_FRAMERATE_30);
+
+    fprintf(stderr, "finished configuring the camera\n");
+
+    camera->startAcquisition();
+
+    //cv::Mat newFrame = cv::imread("/Users/Andy/Downloads/lena.png", CV_LOAD_IMAGE_COLOR);
+    cv::Mat newFrame = camera->grabFrame();
     ui->imagePreview->showImage(newFrame);
+
+    camera->stopAcquisition();
 
     ui->actionStart->setEnabled(true);
 }

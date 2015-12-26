@@ -120,23 +120,41 @@ void OpenCVViewer::renderImage()
     }
 }
 
+QImage Mat2QImage(const cv::Mat3b &src) {
+        QImage dest(src.cols, src.rows, QImage::Format_ARGB32);
+        for (int y = 0; y < src.rows; ++y) {
+                const cv::Vec3b *srcrow = src[y];
+                QRgb *destrow = (QRgb*)dest.scanLine(y);
+                for (int x = 0; x < src.cols; ++x) {
+                        destrow[x] = qRgba(srcrow[x][2], srcrow[x][1], srcrow[x][0], 255);
+                }
+        }
+        return dest;
+}
+
 bool OpenCVViewer::showImage(cv::Mat image)
 {
     cv::flip(image, originalImg, 0);
-    //image.copyTo(originalImg);
+    /*
+    image.copyTo(originalImg);
 
     imgRatio = (float)image.cols/(float)image.rows;
 
     if(originalImg.channels() == 3) {
         renderedImg = QImage((const unsigned char*)(originalImg.data),
                               originalImg.cols, originalImg.rows,
-                              originalImg.step, QImage::Format_RGB888)/*.rgbSwapped()*/;
+                              originalImg.step, QImage::Format_RGB888)
     } else if(originalImg.channels() == 1) {
         renderedImg = QImage((const unsigned char*)(originalImg.data),
                               originalImg.cols, originalImg.rows,
                               originalImg.step, QImage::Format_Indexed8);
     } else
         return false;
+    */
+
+    imgRatio = (float)image.cols/(float)image.rows;
+
+    renderedImg = Mat2QImage(originalImg);
 
     isSceneChanged = true;
     updateScene();

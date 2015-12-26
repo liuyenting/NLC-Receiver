@@ -5,6 +5,7 @@
 #include <QMainWindow>
 #include <QSignalMapper>
 #include <QAction>
+#include <opencv2/core/mat.hpp>
 
 class QActionGroup;
 
@@ -41,6 +42,7 @@ private:
     QActionGroup *devices;
 
     Camera *camera;
+    cv::Mat imgBuf;
 };
 
 #endif // MAINWINDOW_H

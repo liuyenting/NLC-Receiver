@@ -1,11 +1,14 @@
 #include "camera.hpp"
 
+#include <stdio.h>
+
 #include <vector>
 #include <stdarg.h>
 #include <stdexcept>
 #include <sstream>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/highgui/highgui.hpp>
 
 Camera::Camera()
     : isDeviceOpened(false), isTransmitting(false) {
@@ -60,6 +63,9 @@ void Camera::setParameter(int count, ...) {
 	va_list args;
 	va_start(args, count);
 
+    dc1394_video_set_transmission(camHandle, DC1394_OFF);
+    dc1394_capture_stop(camHandle);
+
 	// Input is always in the form (Feature, Value).
 	Camera::Parameters parameter;
 	for(int i = 0; i < count; i++) {
@@ -69,7 +75,7 @@ void Camera::setParameter(int count, ...) {
 		case Camera::BusSpeed:
 		{
             dc1394speed_t busSpeed = static_cast<dc1394speed_t>(va_arg(args, int));
-			err = dc1394_video_set_iso_speed(camHandle, busSpeed);
+            err = dc1394_video_set_iso_speed(camHandle, busSpeed);
 			if(err != DC1394_SUCCESS)
 				throw std::runtime_error("Failed to switch bus speed");
 
@@ -101,8 +107,8 @@ void Camera::setParameter(int count, ...) {
 		case Camera::FrameRate:
 		{
             dc1394framerate_t frameRate = static_cast<dc1394framerate_t>(va_arg(args, int));
-			err = dc1394_video_set_framerate(camHandle, frameRate);
-			if(err != DC1394_SUCCESS) {
+            err = dc1394_video_set_framerate(camHandle, frameRate);
+            if(err != DC1394_SUCCESS) {
 				freeCamera();
 				throw std::runtime_error("Failed to update frame rate");
 			}
@@ -131,16 +137,29 @@ void Camera::startAcquisition() {
 
 cv::Mat Camera::grabFrame() {
     err = dc1394_capture_dequeue(camHandle, DC1394_CAPTURE_POLICY_WAIT, &frameHandle);
-
 	if(err != DC1394_SUCCESS) {
 		stopAcquisition();
 		freeCamera();
 		throw std::runtime_error("Failed to grab a frame");
 	}
 
+    FILE *imagefile = fopen("debug-precv.ppm", "wb");
+    if( imagefile == NULL) {
+        perror( "Can't create output file");
+    }
+    fprintf(imagefile,"P6\n%u %u\n255\n", 1280, 962);
+    fwrite(frameHandle->image, 1, 962*1280*3, imagefile);
+    fclose(imagefile);
+    fprintf(stderr, "wrote: debug.ppm (%d image bytes)\n", 962*1280*3);
+
     cv::Mat newFrame = dc1394frameToMat(frameHandle);
 
-	dc1394_capture_enqueue(camHandle, frameHandle);
+    err = dc1394_capture_enqueue(camHandle, frameHandle);
+    if(err != DC1394_SUCCESS) {
+        stopAcquisition();
+        freeCamera();
+        throw std::runtime_error("Failed to enqueue back the frame buffer");
+    }
 
 	return newFrame;
 }
@@ -157,7 +176,7 @@ void Camera::stopAcquisition() {
 
 void Camera::startTransmission() {
 	err = dc1394_video_set_transmission(camHandle, DC1394_ON);
-	if(err != DC1394_SUCCESS) {
+    if(err != DC1394_SUCCESS) {
 		stopAcquisition();
 		freeCamera();
 		throw std::runtime_error("Failed to start isochronous transmission");
@@ -176,14 +195,14 @@ void Camera::stopTransmission() {
 cv::Mat Camera::dc1394frameToMat(dc1394video_frame_t *frame) {
 	// Preset the Mat.
 	cv::Size size(frame->size[0], frame->size[1]);
-	cv::Mat tmp(size, CV_8UC3, frame->image);
+    cv::Mat tmp(size, CV_8UC3, frame->image, size.width*3);
 
 	// Reform the RGB sequence.
-	cv::Mat img(size, CV_8UC3, cv::Scalar(0, 0, 0));
-	cv::cvtColor(tmp, img, CV_RGB2BGR);
-	tmp.release();
+    cv::Mat img(size, CV_8UC3, cv::Scalar(0, 0, 0));
+    cv::cvtColor(tmp, img, CV_RGB2BGR);
+    tmp.release();
 
-	return img;
+    return img;
 }
 
 void Camera::freeObject() {

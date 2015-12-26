@@ -5,6 +5,7 @@
 #include <vector>
 #include <cstdarg>
 #include <opencv2/core/mat.hpp>
+#include <opencv2/highgui/highgui_c.h>
 
 namespace Device
 {
@@ -36,6 +37,7 @@ private:
 	void stopTransmission();
 
 	cv::Mat dc1394frameToMat(dc1394video_frame_t *frame);
+    IplImage * dc1394frameToIplImage(dc1394video_frame_t *frame);
 
 	void freeObject();
 	void freeCamera();
