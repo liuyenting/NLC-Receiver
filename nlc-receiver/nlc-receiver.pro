@@ -22,12 +22,14 @@ SOURCES     +=  main.cpp \
                 mainwindow.cpp \
                 camera.cpp \
                 utility.cpp \
-    opencvviewer.cpp
+    opencvviewer.cpp \
+    analysis.cpp
 
 HEADERS     +=  camera.hpp \
                 mainwindow.hpp \
                 utility.hpp \
-    opencvviewer.hpp
+    opencvviewer.hpp \
+    analysis.hpp
 
 FORMS       +=  mainwindow.ui
 

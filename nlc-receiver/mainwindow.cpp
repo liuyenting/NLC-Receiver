@@ -39,6 +39,7 @@ void MainWindow::on_actionStart_triggered() {
     camera->startCaptureVideo(ui->imagePreview);
 
     ui->actionStop->setEnabled(true);
+    ui->actionSave_Image->setEnabled(true);
 }
 
 void MainWindow::on_actionStop_triggered() {
@@ -72,6 +73,8 @@ void MainWindow::on_actionGrab_triggered()
     camera->stopAcquisition();
 
     ui->actionStart->setEnabled(true);
+    if(!ui->actionSave_Image->isEnabled())
+        ui->actionSave_Image->setEnabled(true);
 }
 
 void MainWindow::on_actionRefresh_triggered() {
@@ -110,7 +113,8 @@ void MainWindow::on_actionRefresh_triggered() {
 }
 
 void MainWindow::on_actionSave_Image_triggered() {
-
+    cv::Mat3b imgDump = ui->imagePreview->dumpImage();
+    cv::imwrite("/Users/Andy/Desktop/frame.ppm", imgDump);
 }
 
 void MainWindow::on_actionExit_triggered() {
@@ -136,6 +140,7 @@ void MainWindow::addRefreshAction() {
     ui->menuDeviceList->addSeparator();
 
     QAction *actionRefresh = new QAction("Refresh", ui->menuDeviceList);
+    actionRefresh->setShortcut(Qt::CTRL + Qt::Key_R);
     connect(actionRefresh, SIGNAL(triggered()), this, SLOT(on_actionRefresh_triggered()));
 
     ui->menuDeviceList->addAction(actionRefresh);
