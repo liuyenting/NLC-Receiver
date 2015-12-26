@@ -143,15 +143,6 @@ cv::Mat Camera::grabFrame() {
 		throw std::runtime_error("Failed to grab a frame");
 	}
 
-    FILE *imagefile = fopen("debug-precv.ppm", "wb");
-    if( imagefile == NULL) {
-        perror( "Can't create output file");
-    }
-    fprintf(imagefile,"P6\n%u %u\n255\n", 1280, 962);
-    fwrite(frameHandle->image, 1, 962*1280*3, imagefile);
-    fclose(imagefile);
-    fprintf(stderr, "wrote: debug.ppm (%d image bytes)\n", 962*1280*3);
-
     cv::Mat newFrame = dc1394frameToMat(frameHandle);
 
     err = dc1394_capture_enqueue(camHandle, frameHandle);

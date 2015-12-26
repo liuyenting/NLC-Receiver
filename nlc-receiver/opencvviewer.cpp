@@ -49,8 +49,8 @@ void OpenCVViewer::resizeGL(int width, int height)
 
     emit imageSizeChanged(outW, outH);
 
-    posX = (width-outW)/2;
-    posY = (height-outH)/2;
+    posX = (width - outW)/2;
+    posY = (height - outH)/2;
 
     isSceneChanged = true;
 
@@ -87,11 +87,12 @@ void OpenCVViewer::renderImage()
 
         QImage image;
 
-        // TODO: CLEANUP THE CODES HERE
         glPushMatrix();
         {
             int inW = renderedImg.width();
             int inH = renderedImg.height();
+
+            // Target screen region, full-area size.
             outW = this->size().width() * scaleRatio;
             outH = this->size().height() * scaleRatio;
 
