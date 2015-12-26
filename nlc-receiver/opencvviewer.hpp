@@ -3,7 +3,7 @@
 
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions_2_0>
-#include <opencv2/core/core.hpp>
+#include <opencv2/core/mat.hpp>
 
 class OpenCVViewer : public QOpenGLWidget, protected QOpenGLFunctions_2_0
 {
@@ -16,7 +16,7 @@ signals:
     void imageSizeChanged(int outW, int outH);
 
 public slots:
-    bool showImage(cv::Mat image);
+    bool showImage(const cv::Mat3b &srcImg);
 
 protected:
     void initializeGL();
@@ -31,7 +31,7 @@ private:
     bool isSceneChanged;
 
     QImage renderedImg;
-    cv::Mat originalImg;
+    cv::Mat3b originalImg;
 
     // Default background color.
     QColor bgColor;
