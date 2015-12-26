@@ -29,15 +29,18 @@ void MainWindow::on_actionStart_triggered() {
 
     // TEMPORARY
     //camera->stopAcquisition();
-    //camera->setParameter(Camera::BusSpeed, DC1394_ISO_SPEED_3200);
-    //camera->setParameter(Camera::Resolution, 0, 0, 1280, 962);
-    //camera->setParameter(Camera::FrameRate, DC1394_FRAMERATE_30);
+    camera->setParameter(1, Camera::BusSpeed, DC1394_ISO_SPEED_3200);
+    camera->setParameter(1, Camera::Resolution, 0, 0, 1280, 962);
+    camera->setParameter(1, Camera::FrameRate, DC1394_FRAMERATE_30);
 
     fprintf(stderr, "finished configuring the camera\n");
 
     camera->startAcquisition();
 
     ui->actionStop->setEnabled(true);
+
+    cv::Mat newFrame = camera->grabFrame();
+    ui->imagePreview->showImage(newFrame);
 }
 
 void MainWindow::on_actionStop_triggered() {
@@ -116,7 +119,7 @@ void MainWindow::on_deviceSelected(const QString & guid_label) {
 
     // Automatically start grabbing.
     //ui->actionStart->activate(QAction::Trigger);
-    ui->actionGrab->activate(QAction::Trigger);
+    //ui->actionGrab->activate(QAction::Trigger);
 }
 
 void MainWindow::addRefreshAction() {

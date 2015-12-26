@@ -7,7 +7,8 @@
 #include <opencv2/core/mat.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
-Camera::Camera() {
+Camera::Camera()
+    : isDeviceOpened(false), isTransmitting(false) {
 	// Init the IIDC library.
 	objHandle = dc1394_new();
 	if(!objHandle)
@@ -16,6 +17,7 @@ Camera::Camera() {
 
 Camera::~Camera() {
 	close();
+    freeObject();
 }
 
 std::vector<uint64_t> Camera::listDevices() {
@@ -39,14 +41,19 @@ void Camera::open(uint64_t guid) {
 		std::ostringstream oss;
 		oss << "Failed to initialize camera with GUID " << guid;
 		throw std::runtime_error(oss.str());
-	}
+    } else
+        isDeviceOpened = true;
 }
 
 void Camera::close() {
-	stopAcquisition();
-
-	freeCamera();
-	freeObject();
+    if(isTransmitting) {
+        stopAcquisition();
+        isTransmitting = false;
+    }
+    if(isDeviceOpened) {
+        freeCamera();
+        isDeviceOpened = false;
+    }
 }
 
 void Camera::setParameter(int count, ...) {
@@ -57,6 +64,7 @@ void Camera::setParameter(int count, ...) {
 	Camera::Parameters parameter;
 	for(int i = 0; i < count; i++) {
         parameter = static_cast<Camera::Parameters>(va_arg(args, int));
+        fprintf(stderr, "entered parameter %d\n", parameter);
 		switch(parameter) {
 		case Camera::BusSpeed:
 		{
@@ -70,7 +78,7 @@ void Camera::setParameter(int count, ...) {
 
 		case Camera::Resolution:
 		{
-			int left = va_arg(args, int);
+            int left = va_arg(args, int);
 			int top = va_arg(args, int);
 			int width = va_arg(args, int);
 			int height = va_arg(args, int);
@@ -84,6 +92,8 @@ void Camera::setParameter(int count, ...) {
 				freeCamera();
 				throw std::runtime_error("Failed to set format 7 configurations");
 			}
+
+            fprintf(stderr, "%dx%d, (%d, %d)", width, height, left, top);
 
 			break;
 		}
@@ -113,18 +123,22 @@ void Camera::startAcquisition() {
 	if(err != DC1394_SUCCESS) {
 		freeCamera();
 		throw std::runtime_error("Failed to start the acquisition session");
-	}
+    } else
+        startTransmission();
+
+    fprintf(stderr, "acquisition started\n");
 }
 
 cv::Mat Camera::grabFrame() {
-	err = dc1394_capture_dequeue(camHandle, DC1394_CAPTURE_POLICY_WAIT, &frameHandle);
+    err = dc1394_capture_dequeue(camHandle, DC1394_CAPTURE_POLICY_WAIT, &frameHandle);
+
 	if(err != DC1394_SUCCESS) {
 		stopAcquisition();
 		freeCamera();
 		throw std::runtime_error("Failed to grab a frame");
 	}
 
-	cv::Mat newFrame = dc1394frameToMat(frameHandle);
+    cv::Mat newFrame = dc1394frameToMat(frameHandle);
 
 	dc1394_capture_enqueue(camHandle, frameHandle);
 
@@ -137,6 +151,8 @@ void Camera::stopAcquisition() {
 		throw std::runtime_error("Failed to stop the acquisition session");
 	else
 		stopTransmission();
+
+    fprintf(stderr, "acquisition stopped\n");
 }
 
 void Camera::startTransmission() {
@@ -145,13 +161,16 @@ void Camera::startTransmission() {
 		stopAcquisition();
 		freeCamera();
 		throw std::runtime_error("Failed to start isochronous transmission");
-	}
+    } else
+        isTransmitting = true;
 }
 
 void Camera::stopTransmission() {
 	err = dc1394_video_set_transmission(camHandle, DC1394_OFF);
 	if(err != DC1394_SUCCESS)
 		throw std::runtime_error("Failed to stop the transmission");
+    else
+        isTransmitting = false;
 }
 
 cv::Mat Camera::dc1394frameToMat(dc1394video_frame_t *frame) {

@@ -44,6 +44,8 @@ private:
 	dc1394camera_t *camHandle;
 	dc1394video_frame_t *frameHandle;
 	dc1394error_t err;
+
+    bool isDeviceOpened, isTransmitting;
 };
 
 #endif
