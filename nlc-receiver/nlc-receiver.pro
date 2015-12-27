@@ -11,8 +11,10 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 QMAKE_CXXFLAGS      +=  -std=c++11
 
-macx:QMAKE_CXXFLAGS +=  -stdlib=libc++
-macx:QMAKE_LFLAGS   +=  -stdlib=libc++
+macx {
+    QMAKE_CXXFLAGS +=  -stdlib=libc++
+    QMAKE_LFLAGS   +=  -stdlib=libc++
+}
 
 TARGET      = nlc-receiver
 TEMPLATE    = app

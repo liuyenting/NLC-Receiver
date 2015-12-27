@@ -27,7 +27,7 @@ public:
 	void close();
 
 	enum Parameters {
-        BusSpeed = 0, Resolution, FrameRate, Exposure
+        BusSpeed = 0, Resolution, FrameRate, ShutterTime
 	};
     void setParameter(int count, ...);
 

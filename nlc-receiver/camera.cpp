@@ -120,6 +120,22 @@ void Camera::setParameter(int count, ...) {
 			break;
 		}
 
+        case Camera::ShutterTime:
+        {
+            qDebug() << "-> Shutter Time";
+
+            float interval = (float)va_arg(args, int) / 1000; // msec
+            err = dc1394_feature_set_absolute_value(camHandle,
+                                                    DC1394_FEATURE_SHUTTER,
+                                                    interval);
+            if(err != DC1394_SUCCESS) {
+                freeCamera();
+                throw std::runtime_error("Failed to set shutter time");
+            }
+
+            break;
+        }
+
 		default:
 			throw std::out_of_range("Unknown camera parameter");
 		}
