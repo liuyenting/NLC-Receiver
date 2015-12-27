@@ -10,11 +10,6 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow), camera(new Camera) {
 	ui->setupUi(this);
 
-    fprintf(stderr, "inside main window constructor\n");
-
-    // ENABLE GRAB FRAME FOR DEBUG
-    ui->actionGrab->setEnabled(true);
-
     ui->actionRefresh->activate(QAction::Trigger);
 }
 
@@ -26,14 +21,6 @@ MainWindow::~MainWindow() {
 void MainWindow::on_actionStart_triggered() {
     ui->actionStart->setEnabled(false);
     ui->actionGrab->setEnabled(false);
-
-    // TEMPORARY
-    //camera->stopAcquisition();
-    camera->setParameter(1, Camera::BusSpeed, DC1394_ISO_SPEED_3200);
-    camera->setParameter(1, Camera::Resolution, 0, 0, 1280, 962);
-    camera->setParameter(1, Camera::FrameRate, DC1394_FRAMERATE_30);
-
-    fprintf(stderr, "finished configuring the camera\n");
 
     camera->startAcquisition();
     camera->startCaptureVideo(ui->imagePreview);
@@ -56,14 +43,6 @@ void MainWindow::on_actionGrab_triggered()
 {
     ui->actionStart->setEnabled(false);
 
-    // TEMPORARY
-    //camera->stopAcquisition();
-    camera->setParameter(1, Camera::BusSpeed, DC1394_ISO_SPEED_3200);
-    camera->setParameter(1, Camera::Resolution, 0, 0, 1280, 962);
-    camera->setParameter(1, Camera::FrameRate, DC1394_FRAMERATE_30);
-
-    fprintf(stderr, "finished configuring the camera\n");
-
     camera->startAcquisition();
 
     //cv::Mat newFrame = cv::imread("/Users/Andy/Downloads/lena.png", CV_LOAD_IMAGE_COLOR);
@@ -80,9 +59,9 @@ void MainWindow::on_actionGrab_triggered()
 void MainWindow::on_actionRefresh_triggered() {
     ui->menuDeviceList->clear();
 
+    qDebug() << "REFRESH triggered";
     std::vector<uint64_t> deviceList = camera->listDevices();
-
-    fprintf(stderr, "refresh triggered, %lu device detected\n", deviceList.size());
+    qDebug() << "..." << deviceList.size() << "devices detected\n";
 
     // Dynamically populate the device GUIDs into the menu.
     if(deviceList.size() > 0) {
@@ -124,9 +103,14 @@ void MainWindow::on_actionExit_triggered() {
 
 void MainWindow::on_deviceSelected(const QString & guid_label) {
     qDebug() << "Trying to connect with" << qPrintable(guid_label);
-
     camera->open(guid_label.toULongLong());
     qDebug() << "... CONNECTED\n";
+
+    qDebug() << "Pre-configuring the camera";
+    camera->setParameter(3, Camera::BusSpeed, DC1394_ISO_SPEED_3200,
+                            Camera::Resolution, 0, 0, 1280, 962,
+                            Camera::FrameRate, DC1394_FRAMERATE_30);
+    qDebug() << "... COMPLETE\n";
 
     // Enable the UI.
     ui->actionGrab->setEnabled(true);

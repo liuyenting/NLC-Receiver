@@ -1,7 +1,5 @@
 #include "camera.hpp"
-
-#include <stdio.h>
-
+#include <QtDebug>
 #include <vector>
 #include <stdarg.h>
 #include <stdexcept>
@@ -72,10 +70,12 @@ void Camera::setParameter(int count, ...) {
 	Camera::Parameters parameter;
 	for(int i = 0; i < count; i++) {
         parameter = static_cast<Camera::Parameters>(va_arg(args, int));
-        fprintf(stderr, "entered parameter %d\n", parameter);
+
 		switch(parameter) {
 		case Camera::BusSpeed:
 		{
+            qDebug() << "-> Bus Speed";
+
             dc1394speed_t busSpeed = static_cast<dc1394speed_t>(va_arg(args, int));
             err = dc1394_video_set_iso_speed(camHandle, busSpeed);
 			if(err != DC1394_SUCCESS)
@@ -86,6 +86,8 @@ void Camera::setParameter(int count, ...) {
 
 		case Camera::Resolution:
 		{
+            qDebug() << "-> Resolution";
+
             int left = va_arg(args, int);
 			int top = va_arg(args, int);
 			int width = va_arg(args, int);
@@ -99,15 +101,15 @@ void Camera::setParameter(int count, ...) {
 			if(err != DC1394_SUCCESS) {
 				freeCamera();
 				throw std::runtime_error("Failed to set format 7 configurations");
-			}
-
-            fprintf(stderr, "%dx%d, (%d, %d)", width, height, left, top);
+            }
 
 			break;
 		}
 
 		case Camera::FrameRate:
 		{
+            qDebug() << "-> Frame Rate";
+
             dc1394framerate_t frameRate = static_cast<dc1394framerate_t>(va_arg(args, int));
             err = dc1394_video_set_framerate(camHandle, frameRate);
             if(err != DC1394_SUCCESS) {
@@ -134,7 +136,7 @@ void Camera::startAcquisition() {
     } else
         startTransmission();
 
-    fprintf(stderr, "acquisition started\n");
+    qDebug() << "Acquisition STARTED\n";
 }
 
 void Camera::startCaptureVideo(OpenCVViewer *viewer) {
@@ -186,7 +188,7 @@ void Camera::stopAcquisition() {
 	else
 		stopTransmission();
 
-    fprintf(stderr, "acquisition stopped\n");
+    qDebug() << "Acquisition STOPPED\n";
 }
 
 void Camera::startTransmission() {

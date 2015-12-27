@@ -45,4 +45,4 @@ private:
     cv::Mat imgBuf;
 };
 
-#endif // MAINWINDOW_H
+#endif
