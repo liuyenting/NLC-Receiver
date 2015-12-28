@@ -114,6 +114,8 @@ void Camera::setParameter(int count, ...) {
 		{
 			qDebug() << "-> Brightness";
 
+			qDebug() << "... NOT IMPLEMENTED";
+
 			break;
 		}
 
@@ -121,12 +123,16 @@ void Camera::setParameter(int count, ...) {
 		{
 			qDebug() << "-> Exposure";
 
+			qDebug() << "... NOT IMPLEMENTED";
+
 			break;
 		}
 
 		case Camera::Sharpness:
 		{
 			qDebug() << "-> Sharpness";
+
+			qDebug() << "... NOT IMPLEMENTED";
 
 			break;
 		}
@@ -145,10 +151,10 @@ void Camera::setParameter(int count, ...) {
 				                         DC1394_FEATURE_WHITE_BALANCE,
 				                         DC1394_ON);
 				if(parMode == MANUAL) {
-					float interval = (float)va_arg(args, int) / 1000000;        // usec
+					float value = (float)va_arg(args, int);
 					err = dc1394_feature_set_absolute_value(camHandle,
 					                                        DC1394_FEATURE_WHITE_BALANCE,
-					                                        interval);
+					                                        value);
 				} else if(parMode == AUTO) {
 					err = dc1394_feature_set_mode(camHandle,
 					                              DC1394_FEATURE_WHITE_BALANCE,
@@ -198,6 +204,8 @@ void Camera::setParameter(int count, ...) {
 		case Camera::Gain:
 		{
 			qDebug() << "-> Gain";
+
+			qDebug() << "... NOT IMPLEMENTED";
 
 			break;
 		}

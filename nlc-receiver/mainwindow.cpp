@@ -106,7 +106,8 @@ void MainWindow::on_deviceSelected(const QString & guid_label) {
 	qDebug() << "... CONNECTED\n";
 
 	qDebug() << "Pre-configuring the camera";
-	camera->setParameter(4, Camera::BusSpeed, DC1394_ISO_SPEED_3200,
+	camera->setParameter(4,
+	                     Camera::BusSpeed, DC1394_ISO_SPEED_3200,
 	                     Camera::Resolution, 0, 0, 1280, 962,
 	                     Camera::FrameRate, DC1394_FRAMERATE_30,
 	                     Camera::WhiteBalance, Camera::AUTO);
