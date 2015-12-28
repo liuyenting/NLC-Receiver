@@ -11,7 +11,7 @@
 #include <chrono>
 
 Camera::Camera()
-    : isDeviceOpened(false), isTransmitting(false) {
+	: isDeviceOpened(false), isTransmitting(false) {
 	// Init the IIDC library.
 	objHandle = dc1394_new();
 	if(!objHandle)
@@ -20,7 +20,7 @@ Camera::Camera()
 
 Camera::~Camera() {
 	close();
-    freeObject();
+	freeObject();
 }
 
 std::vector<uint64_t> Camera::listDevices() {
@@ -44,40 +44,44 @@ void Camera::open(uint64_t guid) {
 		std::ostringstream oss;
 		oss << "Failed to initialize camera with GUID " << guid;
 		throw std::runtime_error(oss.str());
-    } else
-        isDeviceOpened = true;
+	} else
+		isDeviceOpened = true;
 }
 
 void Camera::close() {
-    if(isTransmitting) {
-        stopAcquisition();
-        isTransmitting = false;
-    }
-    if(isDeviceOpened) {
-        freeCamera();
-        isDeviceOpened = false;
-    }
+	if(isTransmitting) {
+		stopAcquisition();
+		isTransmitting = false;
+	}
+	if(isDeviceOpened) {
+		freeCamera();
+		isDeviceOpened = false;
+	}
 }
 
 void Camera::setParameter(int count, ...) {
 	va_list args;
 	va_start(args, count);
 
-    dc1394_video_set_transmission(camHandle, DC1394_OFF);
-    dc1394_capture_stop(camHandle);
+	dc1394_video_set_transmission(camHandle, DC1394_OFF);
+	dc1394_capture_stop(camHandle);
 
 	// Input is always in the form (Feature, Value).
 	Camera::Parameters parameter;
+	Camera::Mode parMode;
 	for(int i = 0; i < count; i++) {
-        parameter = static_cast<Camera::Parameters>(va_arg(args, int));
+		parameter = static_cast<Camera::Parameters>(va_arg(args, int));
+
+		if((parMode != MANUAL) && (parMode != AUTO))
+			throw std::invalid_argument("Invalid parameter mode");
 
 		switch(parameter) {
 		case Camera::BusSpeed:
 		{
-            qDebug() << "-> Bus Speed";
+			qDebug() << "-> Bus Speed";
 
-            dc1394speed_t busSpeed = static_cast<dc1394speed_t>(va_arg(args, int));
-            err = dc1394_video_set_iso_speed(camHandle, busSpeed);
+			dc1394speed_t busSpeed = static_cast<dc1394speed_t>(va_arg(args, int));
+			err = dc1394_video_set_iso_speed(camHandle, busSpeed);
 			if(err != DC1394_SUCCESS)
 				throw std::runtime_error("Failed to switch bus speed");
 
@@ -86,9 +90,9 @@ void Camera::setParameter(int count, ...) {
 
 		case Camera::Resolution:
 		{
-            qDebug() << "-> Resolution";
+			qDebug() << "-> Resolution";
 
-            int left = va_arg(args, int);
+			int left = va_arg(args, int);
 			int top = va_arg(args, int);
 			int width = va_arg(args, int);
 			int height = va_arg(args, int);
@@ -101,40 +105,116 @@ void Camera::setParameter(int count, ...) {
 			if(err != DC1394_SUCCESS) {
 				freeCamera();
 				throw std::runtime_error("Failed to set format 7 configurations");
-            }
+			}
+
+			break;
+		}
+
+		case Camera::Brightness:
+		{
+			qDebug() << "-> Brightness";
+
+			break;
+		}
+
+		case Camera::Exposure:
+		{
+			qDebug() << "-> Exposure";
+
+			break;
+		}
+
+		case Camera::Sharpness:
+		{
+			qDebug() << "-> Sharpness";
+
+			break;
+		}
+
+		case Camera::WhiteBalance:
+		{
+			qDebug() << "-> White Balance";
+
+			parMode = static_cast<Camera::Mode>(va_arg(args, int));
+			if(parMode == OFF) {
+				dc1394_feature_set_power(camHandle,
+				                         DC1394_FEATURE_WHITE_BALANCE,
+				                         DC1394_OFF);
+			} else {
+				dc1394_feature_set_power(camHandle,
+				                         DC1394_FEATURE_WHITE_BALANCE,
+				                         DC1394_ON);
+				if(parMode == MANUAL) {
+					float interval = (float)va_arg(args, int) / 1000000;        // usec
+					err = dc1394_feature_set_absolute_value(camHandle,
+					                                        DC1394_FEATURE_WHITE_BALANCE,
+					                                        interval);
+				} else if(parMode == AUTO) {
+					err = dc1394_feature_set_mode(camHandle,
+					                              DC1394_FEATURE_WHITE_BALANCE,
+					                              DC1394_FEATURE_MODE_AUTO);
+				}
+				if(err != DC1394_SUCCESS) {
+					freeCamera();
+					throw std::runtime_error("Failed to configure white balance");
+				}
+			}
+
+			break;
+		}
+
+		case Camera::ShutterTime:
+		{
+			qDebug() << "-> Shutter Time";
+
+			parMode = static_cast<Camera::Mode>(va_arg(args, int));
+			if(parMode == OFF) {
+				dc1394_feature_set_power(camHandle,
+				                         DC1394_FEATURE_SHUTTER,
+				                         DC1394_OFF);
+			} else {
+				dc1394_feature_set_power(camHandle,
+				                         DC1394_FEATURE_SHUTTER,
+				                         DC1394_ON);
+				if(parMode == MANUAL) {
+					float interval = (float)va_arg(args, int) / 1000000;        // usec
+					err = dc1394_feature_set_absolute_value(camHandle,
+					                                        DC1394_FEATURE_SHUTTER,
+					                                        interval);
+				} else if(parMode == AUTO) {
+					err = dc1394_feature_set_mode(camHandle,
+					                              DC1394_FEATURE_SHUTTER,
+					                              DC1394_FEATURE_MODE_AUTO);
+				}
+				if(err != DC1394_SUCCESS) {
+					freeCamera();
+					throw std::runtime_error("Failed to configure shutter time");
+				}
+			}
+
+			break;
+		}
+
+		case Camera::Gain:
+		{
+			qDebug() << "-> Gain";
 
 			break;
 		}
 
 		case Camera::FrameRate:
 		{
-            qDebug() << "-> Frame Rate";
+			qDebug() << "-> Frame Rate";
 
-            dc1394framerate_t frameRate = static_cast<dc1394framerate_t>(va_arg(args, int));
-            err = dc1394_video_set_framerate(camHandle, frameRate);
-            if(err != DC1394_SUCCESS) {
+			dc1394framerate_t frameRate = static_cast<dc1394framerate_t>(va_arg(args, int));
+			err = dc1394_video_set_framerate(camHandle, frameRate);
+			if(err != DC1394_SUCCESS) {
 				freeCamera();
 				throw std::runtime_error("Failed to update frame rate");
 			}
 
 			break;
 		}
-
-        case Camera::ShutterTime:
-        {
-            qDebug() << "-> Shutter Time";
-
-            float interval = (float)va_arg(args, int) / 1000; // msec
-            err = dc1394_feature_set_absolute_value(camHandle,
-                                                    DC1394_FEATURE_SHUTTER,
-                                                    interval);
-            if(err != DC1394_SUCCESS) {
-                freeCamera();
-                throw std::runtime_error("Failed to set shutter time");
-            }
-
-            break;
-        }
 
 		default:
 			throw std::out_of_range("Unknown camera parameter");
@@ -149,52 +229,52 @@ void Camera::startAcquisition() {
 	if(err != DC1394_SUCCESS) {
 		freeCamera();
 		throw std::runtime_error("Failed to start the acquisition session");
-    } else
-        startTransmission();
+	} else
+		startTransmission();
 
-    qDebug() << "Acquisition STARTED\n";
+	qDebug() << "Acquisition STARTED\n";
 }
 
 void Camera::startCaptureVideo(OpenCVViewer *viewer) {
-    // Assign the viewing port.
-    frameViewer = viewer;
+	// Assign the viewing port.
+	frameViewer = viewer;
 
-    // Initiate the capture thread.
-    isCapturingVideo = true;
-    videoThread = std::thread(&Camera::grabVideo, this);
+	// Initiate the capture thread.
+	isCapturingVideo = true;
+	videoThread = std::thread(&Camera::grabVideo, this);
 }
 
 cv::Mat Camera::grabFrame() {
-    err = dc1394_capture_dequeue(camHandle, DC1394_CAPTURE_POLICY_WAIT, &frameHandle);
+	err = dc1394_capture_dequeue(camHandle, DC1394_CAPTURE_POLICY_WAIT, &frameHandle);
 	if(err != DC1394_SUCCESS) {
 		stopAcquisition();
 		freeCamera();
 		throw std::runtime_error("Failed to grab a frame");
 	}
 
-    cv::Mat newFrame = dc1394frameToMat(frameHandle);
+	cv::Mat newFrame = dc1394frameToMat(frameHandle);
 
-    err = dc1394_capture_enqueue(camHandle, frameHandle);
-    if(err != DC1394_SUCCESS) {
-        stopAcquisition();
-        freeCamera();
-        throw std::runtime_error("Failed to enqueue back the frame buffer");
-    }
+	err = dc1394_capture_enqueue(camHandle, frameHandle);
+	if(err != DC1394_SUCCESS) {
+		stopAcquisition();
+		freeCamera();
+		throw std::runtime_error("Failed to enqueue back the frame buffer");
+	}
 
 	return newFrame;
 }
 
 void Camera::grabVideo() {
-    while(isCapturingVideo) {
-        frameViewer->showImage(grabFrame());
-        // TODO: Limit the refresh rate by probing the camera configuration first.
-        std::this_thread::sleep_for(std::chrono::milliseconds(33));
-    }
+	while(isCapturingVideo) {
+		frameViewer->showImage(grabFrame());
+		// TODO: Limit the refresh rate by probing the camera configuration first.
+		std::this_thread::sleep_for(std::chrono::milliseconds(33));
+	}
 }
 
 void Camera::stopCaptureVideo() {
-    isCapturingVideo = false;
-    videoThread.join();
+	isCapturingVideo = false;
+	videoThread.join();
 }
 
 void Camera::stopAcquisition() {
@@ -204,38 +284,38 @@ void Camera::stopAcquisition() {
 	else
 		stopTransmission();
 
-    qDebug() << "Acquisition STOPPED\n";
+	qDebug() << "Acquisition STOPPED\n";
 }
 
 void Camera::startTransmission() {
 	err = dc1394_video_set_transmission(camHandle, DC1394_ON);
-    if(err != DC1394_SUCCESS) {
+	if(err != DC1394_SUCCESS) {
 		stopAcquisition();
 		freeCamera();
 		throw std::runtime_error("Failed to start isochronous transmission");
-    } else
-        isTransmitting = true;
+	} else
+		isTransmitting = true;
 }
 
 void Camera::stopTransmission() {
 	err = dc1394_video_set_transmission(camHandle, DC1394_OFF);
 	if(err != DC1394_SUCCESS)
 		throw std::runtime_error("Failed to stop the transmission");
-    else
-        isTransmitting = false;
+	else
+		isTransmitting = false;
 }
 
 cv::Mat Camera::dc1394frameToMat(dc1394video_frame_t *frame) {
 	// Preset the Mat.
 	cv::Size size(frame->size[0], frame->size[1]);
-    cv::Mat tmp(size, CV_8UC3, frame->image, size.width*3);
+	cv::Mat tmp(size, CV_8UC3, frame->image, size.width*3);
 
 	// Reform the RGB sequence.
-    cv::Mat img(size, CV_8UC3, cv::Scalar(0, 0, 0));
-    cv::cvtColor(tmp, img, CV_RGB2BGR);
-    tmp.release();
+	cv::Mat img(size, CV_8UC3, cv::Scalar(0, 0, 0));
+	cv::cvtColor(tmp, img, CV_RGB2BGR);
+	tmp.release();
 
-    return img;
+	return img;
 }
 
 void Camera::freeObject() {

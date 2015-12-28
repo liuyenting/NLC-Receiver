@@ -27,15 +27,20 @@ public:
 	void close();
 
 	enum Parameters {
-        BusSpeed = 0, Resolution, FrameRate, ShutterTime
+		BusSpeed = 0, Resolution,
+		Brightness, Exposure, Sharpness, WhiteBalance,
+		ShutterTime, Gain, FrameRate
 	};
-    void setParameter(int count, ...);
+	enum Mode {
+		AUTO = 0, MANUAL, OFF
+	};
+	void setParameter(int count, ...);
 
 	void startAcquisition();
-    void startCaptureVideo(OpenCVViewer *viewer);
-    cv::Mat grabFrame();
-    void grabVideo();
-    void stopCaptureVideo();
+	void startCaptureVideo(OpenCVViewer *viewer);
+	cv::Mat grabFrame();
+	void grabVideo();
+	void stopCaptureVideo();
 	void stopAcquisition();
 
 private:
@@ -43,7 +48,7 @@ private:
 	void stopTransmission();
 
 	cv::Mat dc1394frameToMat(dc1394video_frame_t *frame);
-    IplImage * dc1394frameToIplImage(dc1394video_frame_t *frame);
+	IplImage * dc1394frameToIplImage(dc1394video_frame_t *frame);
 
 	void freeObject();
 	void freeCamera();
@@ -53,12 +58,12 @@ private:
 	dc1394video_frame_t *frameHandle;
 	dc1394error_t err;
 
-    bool isDeviceOpened, isTransmitting;
+	bool isDeviceOpened, isTransmitting;
 
-    std::atomic_bool isCapturingVideo;
-    std::thread videoThread;
+	std::atomic_bool isCapturingVideo;
+	std::thread videoThread;
 
-    OpenCVViewer *frameViewer;
+	OpenCVViewer *frameViewer;
 };
 
 #endif
