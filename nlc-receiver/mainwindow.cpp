@@ -7,126 +7,126 @@
 #include <opencv2/highgui/highgui.hpp>
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), ui(new Ui::MainWindow), camera(new Camera) {
+	: QMainWindow(parent), ui(new Ui::MainWindow), camera(new Camera) {
 	ui->setupUi(this);
 
-    ui->actionRefresh->activate(QAction::Trigger);
+	ui->actionRefresh->activate(QAction::Trigger);
 }
 
 MainWindow::~MainWindow() {
-    delete camera;
+	delete camera;
 	delete ui;
 }
 
 void MainWindow::on_actionStart_triggered() {
-    ui->actionStart->setEnabled(false);
-    ui->actionGrab->setEnabled(false);
+	ui->actionStart->setEnabled(false);
+	ui->actionGrab->setEnabled(false);
 
-    camera->startAcquisition();
-    camera->startCaptureVideo(ui->imagePreview);
+	camera->startAcquisition();
+	camera->startCaptureVideo(ui->imagePreview);
 
-    ui->actionStop->setEnabled(true);
-    ui->actionSave_Image->setEnabled(true);
+	ui->actionStop->setEnabled(true);
+	ui->actionSave_Image->setEnabled(true);
 }
 
 void MainWindow::on_actionStop_triggered() {
-    ui->actionStop->setEnabled(false);
+	ui->actionStop->setEnabled(false);
 
-    camera->stopCaptureVideo();
-    camera->stopAcquisition();
+	camera->stopCaptureVideo();
+	camera->stopAcquisition();
 
-    ui->actionStart->setEnabled(true);
-    ui->actionGrab->setEnabled(true);
+	ui->actionStart->setEnabled(true);
+	ui->actionGrab->setEnabled(true);
 }
 
-void MainWindow::on_actionGrab_triggered()
-{
-    ui->actionStart->setEnabled(false);
+void MainWindow::on_actionGrab_triggered() {
+	ui->actionStart->setEnabled(false);
 
-    camera->startAcquisition();
+	camera->startAcquisition();
 
-    //cv::Mat newFrame = cv::imread("/Users/Andy/Downloads/lena.png", CV_LOAD_IMAGE_COLOR);
-    cv::Mat newFrame = camera->grabFrame();
-    ui->imagePreview->showImage(newFrame);
+	// cv::Mat newFrame = cv::imread("/Users/Andy/Downloads/lena.png", CV_LOAD_IMAGE_COLOR);
+	cv::Mat newFrame = camera->grabFrame();
+	ui->imagePreview->showImage(newFrame);
 
-    camera->stopAcquisition();
+	camera->stopAcquisition();
 
-    ui->actionStart->setEnabled(true);
-    if(!ui->actionSave_Image->isEnabled())
-        ui->actionSave_Image->setEnabled(true);
+	ui->actionStart->setEnabled(true);
+	if(!ui->actionSave_Image->isEnabled())
+		ui->actionSave_Image->setEnabled(true);
 }
 
 void MainWindow::on_actionRefresh_triggered() {
-    ui->menuDeviceList->clear();
+	ui->menuDeviceList->clear();
 
-    qDebug() << "REFRESH triggered";
-    std::vector<uint64_t> deviceList = camera->listDevices();
-    qDebug() << "..." << deviceList.size() << "devices detected\n";
+	qDebug() << "REFRESH triggered";
+	std::vector<uint64_t> deviceList = camera->listDevices();
+	qDebug() << "..." << deviceList.size() << "devices detected\n";
 
-    // Dynamically populate the device GUIDs into the menu.
-    if(deviceList.size() > 0) {
-    QString newDeviceGuid;
-    QSignalMapper *signalMapper = new QSignalMapper(this);
-    for(size_t i = 0; i < deviceList.size(); i++) {
-        newDeviceGuid = QString::number(deviceList[i]);
+	// Dynamically populate the device GUIDs into the menu.
+	if(deviceList.size() > 0) {
+		QString newDeviceGuid;
+		QSignalMapper *signalMapper = new QSignalMapper(this);
+		for(size_t i = 0; i < deviceList.size(); i++) {
+			newDeviceGuid = QString::number(deviceList[i]);
 
-        // Generate new QAction.
-        QAction *newDeviceAction = new QAction(newDeviceGuid, this);
-        newDeviceAction->setCheckable(true);
-        ui->menuDeviceList->addAction(newDeviceAction);
+			// Generate new QAction.
+			QAction *newDeviceAction = new QAction(newDeviceGuid, this);
+			newDeviceAction->setCheckable(true);
+			ui->menuDeviceList->addAction(newDeviceAction);
 
-        // Map the signal.
-        signalMapper->setMapping(newDeviceAction, newDeviceGuid);
+			// Map the signal.
+			signalMapper->setMapping(newDeviceAction, newDeviceGuid);
 
-        // Associate the signal to map slot in the signal mapper.
-        connect(newDeviceAction, SIGNAL(toggled(bool)), signalMapper, SLOT(map()));
-    }
-    // Connect the mapper.
-    connect(signalMapper, SIGNAL(mapped(const QString &)), this, SLOT(on_deviceSelected(const QString &)));
-    } else {
-        QAction *noValidDevice = new QAction("No device", this);
-        noValidDevice->setEnabled(false);
-        ui->menuDeviceList->addAction(noValidDevice);
-    }
-    addRefreshAction();
+			// Associate the signal to map slot in the signal mapper.
+			connect(newDeviceAction, SIGNAL(toggled(bool)), signalMapper, SLOT(map()));
+		}
+		// Connect the mapper.
+		connect(signalMapper, SIGNAL(mapped(const QString &)), this, SLOT(on_deviceSelected(const QString &)));
+	} else {
+		QAction *noValidDevice = new QAction("No device", this);
+		noValidDevice->setEnabled(false);
+		ui->menuDeviceList->addAction(noValidDevice);
+	}
+	addRefreshAction();
 }
 
 void MainWindow::on_actionSave_Image_triggered() {
-    cv::Mat3b imgDump = ui->imagePreview->dumpImage();
-    cv::imwrite("/Users/Andy/Desktop/frame.ppm", imgDump);
+	cv::Mat3b imgDump = ui->imagePreview->dumpImage();
+	cv::imwrite("/Users/Andy/Desktop/frame.ppm", imgDump);
 }
 
 void MainWindow::on_actionExit_triggered() {
-    camera->close();
-    QApplication::quit();
+	camera->close();
+	QApplication::quit();
 }
 
 void MainWindow::on_deviceSelected(const QString & guid_label) {
-    qDebug() << "Trying to connect with" << qPrintable(guid_label);
-    camera->open(guid_label.toULongLong());
-    qDebug() << "... CONNECTED\n";
+	qDebug() << "Trying to connect with" << qPrintable(guid_label);
+	camera->open(guid_label.toULongLong());
+	qDebug() << "... CONNECTED\n";
 
-    qDebug() << "Pre-configuring the camera";
-    camera->setParameter(4, Camera::BusSpeed, DC1394_ISO_SPEED_3200,
-                            Camera::Resolution, 0, 0, 1280, 962,
-                            Camera::FrameRate, DC1394_FRAMERATE_30,
-                            Camera::ShutterTime, 1000); // 1ms
-    qDebug() << "... COMPLETE\n";
+	qDebug() << "Pre-configuring the camera";
+	camera->setParameter(4, Camera::BusSpeed, DC1394_ISO_SPEED_3200,
+	                     Camera::Resolution, 0, 0, 1280, 962,
+	                     Camera::FrameRate, DC1394_FRAMERATE_30,
+	                     Camera::WhiteBalance, Camera::AUTO);
+	camera->setParameter(1, Camera::ShutterTime, Camera::MANUAL, 1000);    // 1ms
+	qDebug() << "... COMPLETE\n";
 
-    // Enable the UI.
-    ui->actionGrab->setEnabled(true);
-    ui->actionStart->setEnabled(true);
+	// Enable the UI.
+	ui->actionGrab->setEnabled(true);
+	ui->actionStart->setEnabled(true);
 
-    // Automatically start grabbing.
-    ui->actionStart->activate(QAction::Trigger);
+	// Automatically start grabbing.
+	ui->actionStart->activate(QAction::Trigger);
 }
 
 void MainWindow::addRefreshAction() {
-    ui->menuDeviceList->addSeparator();
+	ui->menuDeviceList->addSeparator();
 
-    QAction *actionRefresh = new QAction("Refresh", ui->menuDeviceList);
-    actionRefresh->setShortcut(Qt::CTRL + Qt::Key_R);
-    connect(actionRefresh, SIGNAL(triggered()), this, SLOT(on_actionRefresh_triggered()));
+	QAction *actionRefresh = new QAction("Refresh", ui->menuDeviceList);
+	actionRefresh->setShortcut(Qt::CTRL + Qt::Key_R);
+	connect(actionRefresh, SIGNAL(triggered()), this, SLOT(on_actionRefresh_triggered()));
 
-    ui->menuDeviceList->addAction(actionRefresh);
+	ui->menuDeviceList->addAction(actionRefresh);
 }

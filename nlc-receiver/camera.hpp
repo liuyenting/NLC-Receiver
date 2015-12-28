@@ -39,13 +39,14 @@ public:
 	void startAcquisition();
 	void startCaptureVideo(OpenCVViewer *viewer);
 	cv::Mat grabFrame();
-	void grabVideo();
 	void stopCaptureVideo();
 	void stopAcquisition();
 
 private:
 	void startTransmission();
 	void stopTransmission();
+
+	void grabVideo();
 
 	cv::Mat dc1394frameToMat(dc1394video_frame_t *frame);
 	IplImage * dc1394frameToIplImage(dc1394video_frame_t *frame);
