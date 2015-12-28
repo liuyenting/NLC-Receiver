@@ -111,7 +111,7 @@ void MainWindow::on_deviceSelected(const QString & guid_label) {
 	                     Camera::Resolution, 0, 0, 1280, 962,
 	                     Camera::FrameRate, DC1394_FRAMERATE_30,
 	                     Camera::WhiteBalance, Camera::AUTO);
-    camera->setParameter(1, Camera::ShutterTime, Camera::MANUAL, 500);    // 500us
+    camera->setParameter(1, Camera::ShutterTime, Camera::MANUAL, 100);    // 500us
 	qDebug() << "... COMPLETE\n";
 
 	// Enable the UI.

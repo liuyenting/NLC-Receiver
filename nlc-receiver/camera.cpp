@@ -72,9 +72,6 @@ void Camera::setParameter(int count, ...) {
 	for(int i = 0; i < count; i++) {
 		parameter = static_cast<Camera::Parameters>(va_arg(args, int));
 
-		if((parMode != MANUAL) && (parMode != AUTO))
-			throw std::invalid_argument("Invalid parameter mode");
-
 		switch(parameter) {
 		case Camera::BusSpeed:
 		{
